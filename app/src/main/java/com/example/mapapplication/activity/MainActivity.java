@@ -1,5 +1,6 @@
 package com.example.mapapplication.activity;
 
+import android.Manifest;
 import android.content.Intent;
 import android.icu.text.SimpleDateFormat;
 import android.os.Build;
@@ -23,10 +24,11 @@ import com.amap.api.maps.MapView;
 import com.amap.api.maps.UiSettings;
 import com.amap.api.maps.model.LatLng;
 import com.example.mapapplication.R;
+import com.example.mapapplication.activity.base.MPermissionsActivity;
 
 import java.util.Date;
 
-public class MainActivity extends AppCompatActivity implements LocationSource, AMapLocationListener {
+public class MainActivity extends MPermissionsActivity implements LocationSource, AMapLocationListener {
 
     //AMap是地图对象
     private AMap aMap;
@@ -44,6 +46,10 @@ public class MainActivity extends AppCompatActivity implements LocationSource, A
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //动态申请权限
+        requestPermission(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1000);
+
         //获取地图控件引用
         mapView = (MapView) findViewById(R.id.map);
         //在activity执行onCreate时执行mMapView.onCreate(savedInstanceState)，实现地图生命周期管理
@@ -182,5 +188,48 @@ public class MainActivity extends AppCompatActivity implements LocationSource, A
     @Override
     public void deactivate() {
         mListener = null;
+    }
+
+    /**
+     * 权限获取成功
+     *
+     * @param requestCode
+     */
+    @Override
+    public void permissionSuccess(int requestCode) {
+        super.permissionSuccess(requestCode);
+        System.out.println("申请成功");
+        requestPermissionResult(requestCode, true);
+
+    }
+
+    /**
+     * 权限获取失败
+     *
+     * @param requestCode
+     */
+    @Override
+    public void permissionFail(int requestCode) {
+        super.permissionFail(requestCode);
+        System.out.println("申请失败");
+        requestPermissionResult(requestCode, false);
+    }
+
+    /**
+     * 申请结果
+     *
+     * @param code
+     * @param flag
+     */
+    private void requestPermissionResult(int code, boolean flag) {
+        switch (code) {
+            case 1000:
+                if (flag) {//获取权限成功
+                    return;
+                } else {//获取权限失败
+                    Toast.makeText(this, "获取权限失败，无法使用定位服务", Toast.LENGTH_SHORT).show();
+                }
+                break;
+        }
     }
 }
